@@ -1,0 +1,14 @@
+[project]
+name = "eigensort"
+version = "0.1.0"
+description = "Sort your eigenvalues based on the eigenvectors"
+readme = "README.md"
+authors = [
+    { name = "Janek Fleper", email = "j.fleper@mailbox.org" }
+]
+requires-python = ">=3.10"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
