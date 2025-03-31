@@ -32,12 +32,21 @@ def eigensign(ev):
 
 
 def eigensort(ew, ev, sort_eigenvectors=True, sort_eigenvector_signs=True):
-    ew = ew.copy()
-    ev = ev.copy()
-    size = ev.shape[-1]
-    cumulative_transform = np.diag(np.ones(size, dtype=int))
+    ewo = ew.copy()
+    evo = ev.copy()
+    size = evo.shape[-1]
+    print(evo.shape)
 
-    overlaps = compute_overlaps(ev)
+    flatten = np.ndim(ewo) > 2 and np.ndim(evo) > 3
+    if flatten:
+        ewo[1::2] = ewo[1::2, ::-1]
+        evo[1::2] = evo[1::2, ::-1]
+        ewo = ewo.reshape((-1, *ew.shape[2:]))
+        evo = evo.reshape((-1, *ev.shape[2:]))
+    print(evo.shape)
+
+    cumulative_transform = np.diag(np.ones(size, dtype=int))
+    overlaps = compute_overlaps(evo)
     overlaps = patch_overlaps(np.round(np.conj(overlaps) * overlaps).real)
 
     # find the overlap matrices with off-diagonal elements
@@ -47,12 +56,17 @@ def eigensort(ew, ev, sort_eigenvectors=True, sort_eigenvector_signs=True):
     for i in indices:
         new_transform = overlaps[i - 1] @ cumulative_transform
         transform = np.linalg.inv(cumulative_transform) @ new_transform
-        ew[i:] = ew[i:] @ transform
+        ewo[i:] = ewo[i:] @ transform
         if sort_eigenvectors:
-            ev[i:] = ev[i:] @ transform
+            evo[i:] = evo[i:] @ transform
         cumulative_transform = new_transform
 
     if sort_eigenvectors and sort_eigenvector_signs:
-        ev = eigensign(ev)
+        evo = eigensign(evo)
 
-    return ew, ev
+    if flatten:
+        ewo = ewo.reshape(ew.shape)
+        evo = evo.reshape(ev.shape)
+        ewo[1::2] = ewo[1::2, ::-1]
+        evo[1::2] = evo[1::2, ::-1]
+    return ewo, evo
